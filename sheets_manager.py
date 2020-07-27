@@ -8,6 +8,8 @@ import pickle
 import os.path
 import pandas
 
+DATE_LIST = []
+
 
 def get_sheets_service():
     SCOPES = ['https://www.googleapis.com/auth/drive',
@@ -41,7 +43,7 @@ def col2num(col_str):
     return col_num
 
 
-def write_date(sheet, sheet_id, range, content):
+def write_data(sheet, sheet_id, range, content):
     body = {
         'values': [
             content
@@ -66,10 +68,52 @@ def make_date_list():
         if res in last_list:
             res_list.insert(res_list.index(res) + 1, '')
 
-    return res_list
+    DATE_LIST = res_list
 
 
-def group_columns(sheet, sheet_id, start_column, end_column):
+def group_columns_by_month(sheet, sheet_id, month):
+    start_number = col2num(start_column)
+    end_number = col2num(end_column)
+    data = {
+        "requests": [
+            {
+                "addDimensionGroup": {
+                    "range": {
+                        "dimension": "COLUMNS",
+                        "sheetId": 0,
+                        "startIndex": start_number,
+                        "endIndex": end_number
+                    }
+                }
+            }
+        ]
+    }
+    results = sheet.batchUpdate(
+        spreadsheetId=sheet_id, body=data).execute()
+
+
+def group_columns_by_end_date(sheet, sheet_id, month, end_date):
+    start_number = col2num(start_column)
+    end_number = col2num(end_column)
+    data = {
+        "requests": [
+            {
+                "addDimensionGroup": {
+                    "range": {
+                        "dimension": "COLUMNS",
+                        "sheetId": 0,
+                        "startIndex": start_number,
+                        "endIndex": end_number
+                    }
+                }
+            }
+        ]
+    }
+    results = sheet.batchUpdate(
+        spreadsheetId=sheet_id, body=data).execute()
+
+
+def group_columns_by_start_date(sheet, sheet_id, month, start_date):
     start_number = col2num(start_column)
     end_number = col2num(end_column)
     data = {
@@ -91,16 +135,40 @@ def group_columns(sheet, sheet_id, start_column, end_column):
 
 
 def manage_group():
-    return None
+    # 오늘을 기준으로 +10, -10 날짜
+    today_date = datetime.datetime.now()
+    start_date = datetime.datetime.now() + datetime.timedelta(days=-10)
+    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
+
+    if start_date.month < today_date.month:
+        # ex) 7.5 => 1~5 GROUP, 6.1 ~ 6.25 GROUP, 7.15 ~ 7.31 GROUP, 8~12 GROUP
+        # group_columns_by_month : range(1, start_date.month - 1)
+        # group_columns_by_month : range(today_date.month + 1, 12)
+        # group_columns_by_end_date : start_date.month / end_date
+        # group_columns_by_start_date : today_date.month / start_date
+        pass
+    elif end_date.month > today_date.month:
+        # ex) 7.28 => 1~6 GROUP, 7.1 ~ start_date GROUP, enddate ~ 8.31 GROUP, 9~12 GROUP
+        # group_columns_by_month : range(1, today.month - 1 )
+        # group_columns_by_month : range(end_date.month + 1, 12)
+        # group_columns_by_end_date : today_date.month / start_date
+        # group_columns_by_start_date : end_date.month / end_date
+        pass
+    else:
+        # ex) 7.15 => 7.5, 7.25
+        # group_columns_by_month : range(1, today.month - 1)
+        # group_columns_by_month : range(today.month + 1, 12)
+        # group_columns_by_end_date : today_date.month / start_date
+        # group_columns_by_start_date : today_date.month / end_date
+        pass
 
 
 if __name__ == "__main__":
     sheet = get_sheets_service()
+    make_date_list()
 
-    date = make_date_list()
-
-    # write_date(
-    #     sheet, '11AYfo9oaU2zMiRqQKFj5_CrxG6JIp3MTTalwgPmI0UQ', '시트1!E1', date)
+    # write_data(
+    #     sheet, '11AYfo9oaU2zMiRqQKFj5_CrxG6JIp3MTTalwgPmI0UQ', '시트1!E1', DATE_LIST)
 
     manage_group()
 
