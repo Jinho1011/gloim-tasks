@@ -31,6 +31,16 @@ def get_sheets_service():
     return service.spreadsheets()
 
 
+def col2num(col_str):
+    expn = 0
+    col_num = 0
+    for char in reversed(col_str):
+        col_num += (ord(char) - ord('A') + 1) * (26 ** expn)
+        expn += 1
+
+    return col_num
+
+
 def write_date(sheet, sheet_id, range, content):
     body = {
         'values': [
@@ -59,13 +69,40 @@ def make_date_list():
     return res_list
 
 
+def group_columns(sheet, sheet_id, start_column, end_column):
+    start_number = col2num(start_column)
+    end_number = col2num(end_column)
+    data = {
+        "requests": [
+            {
+                "addDimensionGroup": {
+                    "range": {
+                        "dimension": "COLUMNS",
+                        "sheetId": 0,
+                        "startIndex": start_number,
+                        "endIndex": end_number
+                    }
+                }
+            }
+        ]
+    }
+    results = sheet.batchUpdate(
+        spreadsheetId=sheet_id, body=data).execute()
+
+
+def manage_group():
+    return None
+
+
 if __name__ == "__main__":
     sheet = get_sheets_service()
 
     date = make_date_list()
 
-    for d in date:
-        print(d)
+    # write_date(
+    #     sheet, '11AYfo9oaU2zMiRqQKFj5_CrxG6JIp3MTTalwgPmI0UQ', '시트1!E1', date)
 
-    write_date(
-        sheet, '11AYfo9oaU2zMiRqQKFj5_CrxG6JIp3MTTalwgPmI0UQ', '시트1!E1', date)
+    manage_group()
+
+    group_columns(
+        sheet, '11AYfo9oaU2zMiRqQKFj5_CrxG6JIp3MTTalwgPmI0UQ', 'E', 'AI')
