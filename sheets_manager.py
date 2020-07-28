@@ -68,12 +68,18 @@ def make_date_list():
         if res in last_list:
             res_list.insert(res_list.index(res) + 1, '')
 
+    global DATE_LIST
     DATE_LIST = res_list
+
+# 해당 월을 그룹
 
 
 def group_columns_by_month(sheet, sheet_id, month):
-    start_number = col2num(start_column)
-    end_number = col2num(end_column)
+    month_index = '0' + str(month) if month < 10 else str(month)
+    month_range = calendar.monthrange(datetime.datetime.now().year, month)
+    month_list = [DATE_LIST.index(l)
+                  for l in DATE_LIST if l.startswith(month_index)]
+
     data = {
         "requests": [
             {
@@ -81,86 +87,97 @@ def group_columns_by_month(sheet, sheet_id, month):
                     "range": {
                         "dimension": "COLUMNS",
                         "sheetId": 0,
-                        "startIndex": start_number,
-                        "endIndex": end_number
-                    }
+                        "startIndex": month_list[0] + 4,
+                        "endIndex": month_list[-1] + 4
+                    },
+                    "collapsed": True
                 }
             }
         ]
     }
+
     results = sheet.batchUpdate(
         spreadsheetId=sheet_id, body=data).execute()
+
+# 해당 월에 1 ~ end_date까지 그룹
 
 
 def group_columns_by_end_date(sheet, sheet_id, month, end_date):
-    start_number = col2num(start_column)
-    end_number = col2num(end_column)
-    data = {
-        "requests": [
-            {
-                "addDimensionGroup": {
-                    "range": {
-                        "dimension": "COLUMNS",
-                        "sheetId": 0,
-                        "startIndex": start_number,
-                        "endIndex": end_number
-                    }
-                }
-            }
-        ]
-    }
-    results = sheet.batchUpdate(
-        spreadsheetId=sheet_id, body=data).execute()
+    # data = {
+    #     "requests": [
+    #         {
+    #             "addDimensionGroup": {
+    #                 "range": {
+    #                     "dimension": "COLUMNS",
+    #                     "sheetId": 0,
+    #                     "startIndex": start_number,
+    #                     "endIndex": end_number
+    #                 }
+    #             }
+    #         }
+    #     ]
+    # }
+
+    # results = sheet.batchUpdate(
+    #     spreadsheetId=sheet_id, body=data).execute()
+
+    return None
+
+
+# staft_date부터 말일까지 그룹
 
 
 def group_columns_by_start_date(sheet, sheet_id, month, start_date):
-    start_number = col2num(start_column)
-    end_number = col2num(end_column)
-    data = {
-        "requests": [
-            {
-                "addDimensionGroup": {
-                    "range": {
-                        "dimension": "COLUMNS",
-                        "sheetId": 0,
-                        "startIndex": start_number,
-                        "endIndex": end_number
-                    }
-                }
-            }
-        ]
-    }
-    results = sheet.batchUpdate(
-        spreadsheetId=sheet_id, body=data).execute()
+    # data = {
+    #     "requests": [
+    #         {
+    #             "addDimensionGroup": {
+    #                 "range": {
+    #                     "dimension": "COLUMNS",
+    #                     "sheetId": 0,
+    #                     "startIndex": start_number,
+    #                     "endIndex": end_number
+    #                 }
+    #             }
+    #         }
+    #     ]
+    # }
+
+    # results = sheet.batchUpdate(
+    #     spreadsheetId=sheet_id, body=data).execute()
+
+    return None
 
 
-def manage_group():
+def manage_group(sheet, sheet_id):
     # 오늘을 기준으로 +10, -10 날짜
     today_date = datetime.datetime.now()
     start_date = datetime.datetime.now() + datetime.timedelta(days=-10)
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
 
     if start_date.month < today_date.month:
-        # ex) 7.5 => 1~5 GROUP, 6.1 ~ 6.25 GROUP, 7.15 ~ 7.31 GROUP, 8~12 GROUP
-        # group_columns_by_month : range(1, start_date.month - 1)
-        # group_columns_by_month : range(today_date.month + 1, 12)
-        # group_columns_by_end_date : start_date.month / end_date
-        # group_columns_by_start_date : today_date.month / start_date
-        pass
+        for i in range(1, 13):
+            if i not in [start_date.month, today_date.month]:
+                group_columns_by_month(sheet, sheet_id, i)
+        group_columns_by_end_date(sheet, sheet_id, start_date.month, end_date)
+        group_columns_by_start_date(
+            sheet, sheet_id, today_date.month, start_date)
     elif end_date.month > today_date.month:
-        # ex) 7.28 => 1~6 GROUP, 7.1 ~ start_date GROUP, enddate ~ 8.31 GROUP, 9~12 GROUP
-        # group_columns_by_month : range(1, today.month - 1 )
-        # group_columns_by_month : range(end_date.month + 1, 12)
-        # group_columns_by_end_date : today_date.month / start_date
-        # group_columns_by_start_date : end_date.month / end_date
-        pass
+        for i in range(1, 13):
+            if i not in [today_date.month, end_date.month]:
+                group_columns_by_month(sheet, sheet_id, i)
+        group_columns_by_end_date(
+            sheet, sheet_id, start_date.month, start_date)
+        group_columns_by_start_date(
+            sheet, sheet_id, end_date.month, end_date)
     else:
-        # ex) 7.15 => 7.5, 7.25
-        # group_columns_by_month : range(1, today.month - 1)
-        # group_columns_by_month : range(today.month + 1, 12)
-        # group_columns_by_end_date : today_date.month / start_date
-        # group_columns_by_start_date : today_date.month / end_date
-        pass
+        for i in range(1, 13):
+            if i is not today_date.month:
+                group_columns_by_month(sheet, sheet_id, i)
+        group_columns_by_end_date(
+            sheet, sheet_id, today_date.month, start_date)
+        group_columns_by_start_date(
+            sheet, sheet_id, today_date.month, end_date)
 
 
 if __name__ == "__main__":
@@ -170,7 +187,4 @@ if __name__ == "__main__":
     # write_data(
     #     sheet, '11AYfo9oaU2zMiRqQKFj5_CrxG6JIp3MTTalwgPmI0UQ', '시트1!E1', DATE_LIST)
 
-    manage_group()
-
-    group_columns(
-        sheet, '11AYfo9oaU2zMiRqQKFj5_CrxG6JIp3MTTalwgPmI0UQ', 'E', 'AI')
+    manage_group(sheet, '11AYfo9oaU2zMiRqQKFj5_CrxG6JIp3MTTalwgPmI0UQ')
