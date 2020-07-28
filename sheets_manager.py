@@ -71,8 +71,6 @@ def make_date_list():
     global DATE_LIST
     DATE_LIST = res_list
 
-# 해당 월을 그룹
-
 
 def group_columns_by_month(sheet, sheet_id, month):
     month_index = '0' + str(month) if month < 10 else str(month)
@@ -89,8 +87,7 @@ def group_columns_by_month(sheet, sheet_id, month):
                         "sheetId": 0,
                         "startIndex": month_list[0] + 4,
                         "endIndex": month_list[-1] + 4
-                    },
-                    "collapsed": True
+                    }
                 }
             }
         ]
@@ -99,54 +96,59 @@ def group_columns_by_month(sheet, sheet_id, month):
     results = sheet.batchUpdate(
         spreadsheetId=sheet_id, body=data).execute()
 
-# 해당 월에 1 ~ end_date까지 그룹
-
 
 def group_columns_by_end_date(sheet, sheet_id, month, end_date):
-    # data = {
-    #     "requests": [
-    #         {
-    #             "addDimensionGroup": {
-    #                 "range": {
-    #                     "dimension": "COLUMNS",
-    #                     "sheetId": 0,
-    #                     "startIndex": start_number,
-    #                     "endIndex": end_number
-    #                 }
-    #             }
-    #         }
-    #     ]
-    # }
+    month_index = '0' + str(month) if month < 10 else str(month)
+    start_date = month_index + '-01'
+    end_date = end_date.strftime("%m-%d")
 
-    # results = sheet.batchUpdate(
-    #     spreadsheetId=sheet_id, body=data).execute()
+    data = {
+        "requests": [
+            {
+                "addDimensionGroup": {
+                    "range": {
+                        "dimension": "COLUMNS",
+                        "sheetId": 0,
+                        "startIndex": DATE_LIST.index(start_date) + 4,
+                        "endIndex": DATE_LIST.index(end_date) + 4
+                    }
+                }
+            }
+        ]
+    }
 
-    return None
-
-
-# staft_date부터 말일까지 그룹
+    results = sheet.batchUpdate(
+        spreadsheetId=sheet_id, body=data).execute()
 
 
 def group_columns_by_start_date(sheet, sheet_id, month, start_date):
-    # data = {
-    #     "requests": [
-    #         {
-    #             "addDimensionGroup": {
-    #                 "range": {
-    #                     "dimension": "COLUMNS",
-    #                     "sheetId": 0,
-    #                     "startIndex": start_number,
-    #                     "endIndex": end_number
-    #                 }
-    #             }
-    #         }
-    #     ]
-    # }
+    month_index = '0' + str(month) if month < 10 else str(month)
+    start_date = start_date.strftime("%m-%d")
+    last_day_of_month = calendar.monthrange(
+        datetime.datetime.now().year, month)[1]
+    if last_day_of_month < 10:
+        last_day_of_month = '0' + str(last_day_of_month)
+    else:
+        last_day_of_month = str(last_day_of_month)
+    end_date = month_index + '-' + last_day_of_month
 
-    # results = sheet.batchUpdate(
-    #     spreadsheetId=sheet_id, body=data).execute()
+    data = {
+        "requests": [
+            {
+                "addDimensionGroup": {
+                    "range": {
+                        "dimension": "COLUMNS",
+                        "sheetId": 0,
+                        "startIndex": DATE_LIST.index(start_date) + 4,
+                        "endIndex": DATE_LIST.index(end_date) + 4
+                    }
+                }
+            }
+        ]
+    }
 
-    return None
+    results = sheet.batchUpdate(
+        spreadsheetId=sheet_id, body=data).execute()
 
 
 def manage_group(sheet, sheet_id):
