@@ -9,6 +9,7 @@ import os.path
 import pandas
 
 DATE_LIST = []
+SPACE_INDEX = 5
 
 
 def get_sheets_service():
@@ -85,8 +86,8 @@ def create_group_columns_by_month(sheet, sheet_id, month):
                     "range": {
                         "dimension": "COLUMNS",
                         "sheetId": 0,
-                        "startIndex": month_list[0] + 4,
-                        "endIndex": month_list[-1] + 4
+                        "startIndex": month_list[0] + SPACE_INDEX,
+                        "endIndex": month_list[-1] + SPACE_INDEX
                     }
                 }
             }
@@ -109,8 +110,8 @@ def create_group_columns_by_end_date(sheet, sheet_id, month, end_date):
                     "range": {
                         "dimension": "COLUMNS",
                         "sheetId": 0,
-                        "startIndex": DATE_LIST.index(start_date) + 4,
-                        "endIndex": DATE_LIST.index(end_date) + 4
+                        "startIndex": DATE_LIST.index(start_date) + SPACE_INDEX,
+                        "endIndex": DATE_LIST.index(end_date) + SPACE_INDEX
                     }
                 }
             }
@@ -139,8 +140,8 @@ def create_group_columns_by_start_date(sheet, sheet_id, month, start_date):
                     "range": {
                         "dimension": "COLUMNS",
                         "sheetId": 0,
-                        "startIndex": DATE_LIST.index(start_date) + 4,
-                        "endIndex": DATE_LIST.index(end_date) + 4
+                        "startIndex": DATE_LIST.index(start_date) + SPACE_INDEX,
+                        "endIndex": DATE_LIST.index(end_date) + SPACE_INDEX
                     }
                 }
             }
@@ -151,8 +152,24 @@ def create_group_columns_by_start_date(sheet, sheet_id, month, start_date):
         spreadsheetId=sheet_id, body=data).execute()
 
 
-def delete_group_columns(sheet, sheet_id, month, start_date):
-    return None
+def delete_group_columns(sheet, sheet_id):
+    data = {
+        "requests": [
+            {
+                "deleteDimensionGroup": {
+                    "range": {
+                        "dimension": "COLUMNS",
+                        "sheetId": 0,
+                        "startIndex": SPACE_INDEX-1,
+                        "endIndex": len(DATE_LIST) + SPACE_INDEX
+                    }
+                }
+            }
+        ]
+    }
+
+    results = sheet.batchUpdate(
+        spreadsheetId=sheet_id, body=data).execute()
 
 
 def manage_group(sheet, sheet_id):
