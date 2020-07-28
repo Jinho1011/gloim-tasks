@@ -12,6 +12,5 @@ import sheets_init
 SHEET = sheets_init.get_sheets_service()
 DATE = sheets_init.make_date_list()
 
-
 if __name__ == '__main__':
     pass
