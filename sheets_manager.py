@@ -72,7 +72,7 @@ def make_date_list():
     DATE_LIST = res_list
 
 
-def group_columns_by_month(sheet, sheet_id, month):
+def create_group_columns_by_month(sheet, sheet_id, month):
     month_index = '0' + str(month) if month < 10 else str(month)
     month_range = calendar.monthrange(datetime.datetime.now().year, month)
     month_list = [DATE_LIST.index(l)
@@ -97,7 +97,7 @@ def group_columns_by_month(sheet, sheet_id, month):
         spreadsheetId=sheet_id, body=data).execute()
 
 
-def group_columns_by_end_date(sheet, sheet_id, month, end_date):
+def create_group_columns_by_end_date(sheet, sheet_id, month, end_date):
     month_index = '0' + str(month) if month < 10 else str(month)
     start_date = month_index + '-01'
     end_date = end_date.strftime("%m-%d")
@@ -121,7 +121,7 @@ def group_columns_by_end_date(sheet, sheet_id, month, end_date):
         spreadsheetId=sheet_id, body=data).execute()
 
 
-def group_columns_by_start_date(sheet, sheet_id, month, start_date):
+def create_group_columns_by_start_date(sheet, sheet_id, month, start_date):
     month_index = '0' + str(month) if month < 10 else str(month)
     start_date = start_date.strftime("%m-%d")
     last_day_of_month = calendar.monthrange(
@@ -151,8 +151,13 @@ def group_columns_by_start_date(sheet, sheet_id, month, start_date):
         spreadsheetId=sheet_id, body=data).execute()
 
 
+def delete_group_columns(sheet, sheet_id, month, start_date):
+    return None
+
+
 def manage_group(sheet, sheet_id):
-    # 오늘을 기준으로 +10, -10 날짜
+    delete_group_columns(sheet, sheet_id)
+
     today_date = datetime.datetime.now()
     start_date = datetime.datetime.now() + datetime.timedelta(days=-10)
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
@@ -160,25 +165,26 @@ def manage_group(sheet, sheet_id):
     if start_date.month < today_date.month:
         for i in range(1, 13):
             if i not in [start_date.month, today_date.month]:
-                group_columns_by_month(sheet, sheet_id, i)
-        group_columns_by_end_date(sheet, sheet_id, start_date.month, end_date)
-        group_columns_by_start_date(
+                create_group_columns_by_month(sheet, sheet_id, i)
+        create_group_columns_by_end_date(
+            sheet, sheet_id, start_date.month, end_date)
+        create_group_columns_by_start_date(
             sheet, sheet_id, today_date.month, start_date)
     elif end_date.month > today_date.month:
         for i in range(1, 13):
             if i not in [today_date.month, end_date.month]:
-                group_columns_by_month(sheet, sheet_id, i)
-        group_columns_by_end_date(
+                create_group_columns_by_month(sheet, sheet_id, i)
+        create_group_columns_by_end_date(
             sheet, sheet_id, start_date.month, start_date)
-        group_columns_by_start_date(
+        create_group_columns_by_start_date(
             sheet, sheet_id, end_date.month, end_date)
     else:
         for i in range(1, 13):
             if i is not today_date.month:
-                group_columns_by_month(sheet, sheet_id, i)
-        group_columns_by_end_date(
+                create_group_columns_by_month(sheet, sheet_id, i)
+        create_group_columns_by_end_date(
             sheet, sheet_id, today_date.month, start_date)
-        group_columns_by_start_date(
+        create_group_columns_by_start_date(
             sheet, sheet_id, today_date.month, end_date)
 
 
