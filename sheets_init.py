@@ -210,8 +210,10 @@ def manage_group(sheet, sheet_id):
 if __name__ == "__main__":
     sheet = get_sheets_service()
     make_date_list()
+    manage_group(sheet, '11AYfo9oaU2zMiRqQKFj5_CrxG6JIp3MTTalwgPmI0UQ')
 
     # write_data(
     #     sheet, '11AYfo9oaU2zMiRqQKFj5_CrxG6JIp3MTTalwgPmI0UQ', '시트1!E1', DATE_LIST)
 
-    manage_group(sheet, '11AYfo9oaU2zMiRqQKFj5_CrxG6JIp3MTTalwgPmI0UQ')
+    # if 시작일/종료일이 존재 AND 해당 범위에 색칠 X:
+    # #
