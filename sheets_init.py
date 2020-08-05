@@ -163,7 +163,7 @@ def delete_group_columns(sheet, sheet_id):
                         "dimension": "COLUMNS",
                         "sheetId": 0,
                         "startIndex": SPACE_INDEX-1,
-                        "endIndex": len(DATE_LIST) + SPACE_INDEX
+                        "endIndex": len(DATE_LIST) + SPACE_INDEX*2
                     }
                 }
             }
@@ -176,20 +176,23 @@ def delete_group_columns(sheet, sheet_id):
 
 def manage_group(sheet, sheet_id):
     delete_group_columns(sheet, sheet_id)
+    delete_group_columns(sheet, sheet_id)
 
     today_date = datetime.datetime.now()
     start_date = datetime.datetime.now() + datetime.timedelta(days=-10)
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
 
     if start_date.month < today_date.month:
+        print("CASE 1")
         for i in range(1, 13):
             if i not in [start_date.month, today_date.month]:
                 create_group_columns_by_month(sheet, sheet_id, i)
         create_group_columns_by_end_date(
-            sheet, sheet_id, start_date.month, end_date)
+            sheet, sheet_id, start_date.month, start_date)
         create_group_columns_by_start_date(
-            sheet, sheet_id, today_date.month, start_date)
+            sheet, sheet_id, today_date.month, end_date)
     elif end_date.month > today_date.month:
+        print("CASE 2")
         for i in range(1, 13):
             if i not in [today_date.month, end_date.month]:
                 create_group_columns_by_month(sheet, sheet_id, i)
@@ -198,6 +201,7 @@ def manage_group(sheet, sheet_id):
         create_group_columns_by_start_date(
             sheet, sheet_id, end_date.month, end_date)
     else:
+        print("CASE 3")
         for i in range(1, 13):
             if i is not today_date.month:
                 create_group_columns_by_month(sheet, sheet_id, i)
@@ -214,6 +218,3 @@ if __name__ == "__main__":
 
     # write_data(
     #     sheet, '11AYfo9oaU2zMiRqQKFj5_CrxG6JIp3MTTalwgPmI0UQ', '시트1!E1', DATE_LIST)
-
-    # if 시작일/종료일이 존재 AND 해당 범위에 색칠 X:
-    # #
